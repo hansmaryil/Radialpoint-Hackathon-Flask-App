@@ -1,6 +1,8 @@
 from flask import Flask
-import bugsnag
 from bugsnag.flask import handle_exceptions
+from flask.ext.sqlalchemy import SQLAlchemy
+import os
+import bugsnag
 
 # Configure Bugsnag
 bugsnag.configure(
@@ -10,7 +12,11 @@ bugsnag.configure(
 
 # Attach Bugsnag to Flask's exception handler
 app = Flask(__name__)
+app.config.from_object(os.environ['APP_SETTINGS'])
+db = SQLAlchemy(app)
 handle_exceptions(app)
+
+from models import *
 
 @app.route('/')
 def hello():
