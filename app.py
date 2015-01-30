@@ -5,7 +5,8 @@ import os
 import bugsnag
 import requests
 import sqlalchemy.exc
-
+import sys
+import pprint
 # Configure Bugsnag
 bugsnag.configure(
   api_key = "32358772e5093a3e1a58ceec6d4cfe78",
@@ -35,8 +36,7 @@ def index():
         if not first_name or not last_name or not email:
             errors.append("Please fill in all fields.")
 
-        users_list.append({'first_name':first_name, 'last_name':last_name, 'email':email})
-
+        # try-catch adding the user-info to the database
         try:
             new_user = User(
                 first_name=first_name,
@@ -45,14 +45,16 @@ def index():
             )
             db.session.add(new_user)
             db.session.commit()
-        except sqlalchemy.exc.IntegrityError, exc:
-            reason = exc.message
-            print reason
-            bugsnag.notify(Exception(reason))
         except:
-            #bugsnag.notify(db.ExceptionContext)
             bugsnag.notify(Exception("Unable to add item to database."))
             errors.append("Unable to add item to database.")
+    try:
+        users_list = db.session.query(User)
+        pprint.pprint(users_list)
+    except:
+        # catch all errors thrown and notify bugsnag
+        e = sys.exc_info()[0]
+        bugsnag.notify(e)
     return render_template("index.html", errors=errors, users_list=users_list)
 
 if __name__ == '__main__':
