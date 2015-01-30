@@ -4,6 +4,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 import os
 import bugsnag
 import requests
+import sqlalchemy.exc
 
 # Configure Bugsnag
 bugsnag.configure(
@@ -23,7 +24,7 @@ from models import *
 def index():
     # initialize the errors variablie in an empty list, will be populated with errors, if any
     errors = []
-    users = {}
+    users_list = []
     if request.method == "POST":
         # get the user email
         first_name = request.form['FirstName'].strip()
@@ -34,21 +35,25 @@ def index():
         if not first_name or not last_name or not email:
             errors.append("Please fill in all fields.")
 
-        users = sorted(first_name, last_name, email)
+        users_list.append({'first_name':first_name, 'last_name':last_name, 'email':email})
 
         try:
-            result = Result(
+            new_user = User(
                 first_name=first_name,
                 last_name=last_name,
                 email=email
             )
-            db.session.add(result)
+            db.session.add(new_user)
             db.session.commit()
+        except sqlalchemy.exc.IntegrityError, exc:
+            reason = exc.message
+            print reason
+            bugsnag.notify(Exception(reason))
         except:
+            #bugsnag.notify(db.ExceptionContext)
             bugsnag.notify(Exception("Unable to add item to database."))
             errors.append("Unable to add item to database.")
-
-    return render_template("index.html", errors=errors, users=users)
+    return render_template("index.html", errors=errors, users_list=users_list)
 
 if __name__ == '__main__':
     app.run()

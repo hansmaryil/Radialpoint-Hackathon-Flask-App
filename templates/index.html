@@ -11,6 +11,8 @@
     </style>
   </head>
   <body>
+    <div class="containter-fluid">
+      
     <div class="container">
       <h1>Enter User Info</h1>
       <form role="form" method='POST' action='/'>
@@ -34,7 +36,7 @@
       {% endfor %}
     </div>
     <div class="col-sm-5 col-sm-offset-1">
-      {% if users %}
+      {% if users_list %}
         <h2>Users in Database</h2>
         <br>
         <div id="users">
@@ -46,12 +48,12 @@
                 <th>Email Address</th>
               </tr>
             </thead>
-            {% for user in users %}
-              <tr>
-                <td>{{ user[0] }}</td>
-                <td>{{ user[1] }}</td>
-                <td>{{ user[2] }}</td>
-              </tr>
+            {% for dictionary in users_list %}
+                <tr>
+                  <td>{{ dictionary['first_name'] }}</td>
+                  <td>{{ dictionary['last_name'] }}</td>
+                  <td>{{ dictionary['email'] }}</td>
+                </tr>
             {% endfor %}
           </table>
         </div>
